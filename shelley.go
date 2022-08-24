@@ -1,6 +1,7 @@
 package ledger
 
 import (
+	"fmt"
 	"github.com/fxamacker/cbor/v2"
 )
 
@@ -99,4 +100,27 @@ type ShelleyTransactionWitnessSet struct {
 	VkeyWitnesses      []interface{} `cbor:"0,keyasint,omitempty"`
 	MultisigScripts    []interface{} `cbor:"1,keyasint,omitempty"`
 	BootstrapWitnesses []interface{} `cbor:"2,keyasint,omitempty"`
+}
+
+func NewShelleyBlockFromCbor(data []byte) (*ShelleyBlock, error) {
+	var shelleyBlock ShelleyBlock
+	if err := cbor.Unmarshal(data, &shelleyBlock); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
+	if err != nil {
+		return nil, err
+	}
+	shelleyBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
+	return &shelleyBlock, err
+}
+
+func NewShelleyBlockHeaderFromCbor(data []byte) (*ShelleyBlockHeader, error) {
+	var err error
+	var shelleyBlockHeader ShelleyBlockHeader
+	if err := cbor.Unmarshal(data, &shelleyBlockHeader); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	shelleyBlockHeader.id, err = generateBlockHeaderHash(data, nil)
+	return &shelleyBlockHeader, err
 }

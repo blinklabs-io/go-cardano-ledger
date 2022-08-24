@@ -1,6 +1,7 @@
 package ledger
 
 import (
+	"fmt"
 	"github.com/fxamacker/cbor/v2"
 )
 
@@ -44,3 +45,16 @@ value = coin / [coin,multiasset<uint>]
 //type MaryTransactionOutput interface{}
 
 type MaryTransactionOutput cbor.RawMessage
+
+func NewMaryBlockFromCbor(data []byte) (*MaryBlock, error) {
+	var maryBlock MaryBlock
+	if err := cbor.Unmarshal(data, &maryBlock); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
+	if err != nil {
+		return nil, err
+	}
+	maryBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
+	return &maryBlock, err
+}
