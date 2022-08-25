@@ -58,3 +58,11 @@ func NewMaryBlockFromCbor(data []byte) (*MaryBlock, error) {
 	maryBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
 	return &maryBlock, err
 }
+
+func NewMaryTransactionFromCbor(data []byte) (*MaryTransaction, error) {
+	var maryTx MaryTransaction
+	if err := cbor.Unmarshal(data, &maryTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &maryTx, nil
+}

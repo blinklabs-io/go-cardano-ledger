@@ -96,3 +96,11 @@ func NewBabbageBlockHeaderFromCbor(data []byte) (*BabbageBlockHeader, error) {
 	babbageBlockHeader.id, err = generateBlockHeaderHash(data, nil)
 	return &babbageBlockHeader, err
 }
+
+func NewBabbageTransactionFromCbor(data []byte) (*BabbageTransaction, error) {
+	var babbageTx BabbageTransaction
+	if err := cbor.Unmarshal(data, &babbageTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &babbageTx, nil
+}

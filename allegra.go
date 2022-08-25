@@ -46,3 +46,11 @@ func NewAllegraBlockFromCbor(data []byte) (*AllegraBlock, error) {
 	allegraBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
 	return &allegraBlock, err
 }
+
+func NewAllegraTransactionFromCbor(data []byte) (*AllegraTransaction, error) {
+	var allegraTx AllegraTransaction
+	if err := cbor.Unmarshal(data, &allegraTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &allegraTx, nil
+}
