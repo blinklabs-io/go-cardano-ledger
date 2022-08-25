@@ -60,3 +60,11 @@ func NewAlonzoBlockFromCbor(data []byte) (*AlonzoBlock, error) {
 	alonzoBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
 	return &alonzoBlock, err
 }
+
+func NewAlonzoTransactionFromCbor(data []byte) (*AlonzoTransaction, error) {
+	var alonzoTx AlonzoTransaction
+	if err := cbor.Unmarshal(data, &alonzoTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &alonzoTx, nil
+}

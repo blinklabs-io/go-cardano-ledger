@@ -124,3 +124,11 @@ func NewShelleyBlockHeaderFromCbor(data []byte) (*ShelleyBlockHeader, error) {
 	shelleyBlockHeader.id, err = generateBlockHeaderHash(data, nil)
 	return &shelleyBlockHeader, err
 }
+
+func NewShelleyTransactionFromCbor(data []byte) (*ShelleyTransaction, error) {
+	var shelleyTx ShelleyTransaction
+	if err := cbor.Unmarshal(data, &shelleyTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &shelleyTx, nil
+}
