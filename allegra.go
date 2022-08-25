@@ -1,6 +1,7 @@
 package ledger
 
 import (
+	"fmt"
 	"github.com/fxamacker/cbor/v2"
 )
 
@@ -31,4 +32,17 @@ func (b *AllegraBlock) Id() string {
 type AllegraTransaction struct {
 	ShelleyTransaction
 	ValidityIntervalStart uint64 `cbor:"8,keyasint,omitempty"`
+}
+
+func NewAllegraBlockFromCbor(data []byte) (*AllegraBlock, error) {
+	var allegraBlock AllegraBlock
+	if err := cbor.Unmarshal(data, &allegraBlock); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
+	if err != nil {
+		return nil, err
+	}
+	allegraBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
+	return &allegraBlock, err
 }

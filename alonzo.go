@@ -1,6 +1,7 @@
 package ledger
 
 import (
+	"fmt"
 	"github.com/fxamacker/cbor/v2"
 )
 
@@ -45,4 +46,17 @@ type AlonzoTransactionWitnessSet struct {
 	// cannot easily be represented in Go (such as maps with bytestring keys)
 	PlutusData []cbor.RawMessage `cbor:"4,keyasint,omitempty"`
 	Redeemers  []cbor.RawMessage `cbor:"5,keyasint,omitempty"`
+}
+
+func NewAlonzoBlockFromCbor(data []byte) (*AlonzoBlock, error) {
+	var alonzoBlock AlonzoBlock
+	if err := cbor.Unmarshal(data, &alonzoBlock); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
+	if err != nil {
+		return nil, err
+	}
+	alonzoBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
+	return &alonzoBlock, err
 }

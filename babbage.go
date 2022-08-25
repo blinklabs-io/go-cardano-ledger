@@ -1,6 +1,7 @@
 package ledger
 
 import (
+	"fmt"
 	"github.com/fxamacker/cbor/v2"
 )
 
@@ -71,4 +72,27 @@ type BabbageTransaction struct {
 	CollateralReturn ShelleyTransactionOutput  `cbor:"16,keyasint,omitempty"`
 	TotalCollateral  uint64                    `cbor:"17,keyasint,omitempty"`
 	ReferenceInputs  []ShelleyTransactionInput `cbor:"18,keyasint,omitempty"`
+}
+
+func NewBabbageBlockFromCbor(data []byte) (*BabbageBlock, error) {
+	var babbageBlock BabbageBlock
+	if err := cbor.Unmarshal(data, &babbageBlock); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
+	if err != nil {
+		return nil, err
+	}
+	babbageBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
+	return &babbageBlock, err
+}
+
+func NewBabbageBlockHeaderFromCbor(data []byte) (*BabbageBlockHeader, error) {
+	var err error
+	var babbageBlockHeader BabbageBlockHeader
+	if err := cbor.Unmarshal(data, &babbageBlockHeader); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	babbageBlockHeader.id, err = generateBlockHeaderHash(data, nil)
+	return &babbageBlockHeader, err
 }
