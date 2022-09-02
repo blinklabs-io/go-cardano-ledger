@@ -17,7 +17,7 @@ type BabbageBlock struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_                      struct{} `cbor:",toarray"`
 	Header                 BabbageBlockHeader
-	TransactionBodies      []BabbageTransaction
+	TransactionBodies      []BabbageTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
 	// TODO: figure out how to parse properly
 	// We use RawMessage here because the content is arbitrary and can contain data that
@@ -67,11 +67,18 @@ func (h *BabbageBlockHeader) Id() string {
 	return h.id
 }
 
-type BabbageTransaction struct {
-	AlonzoTransaction
+type BabbageTransactionBody struct {
+	AlonzoTransactionBody
 	CollateralReturn ShelleyTransactionOutput  `cbor:"16,keyasint,omitempty"`
 	TotalCollateral  uint64                    `cbor:"17,keyasint,omitempty"`
 	ReferenceInputs  []ShelleyTransactionInput `cbor:"18,keyasint,omitempty"`
+}
+
+type BabbageTransaction struct {
+	Body       BabbageTransactionBody
+	WitnessSet AlonzoTransactionWitnessSet
+	IsValid    bool
+	Metadata   interface{}
 }
 
 func NewBabbageBlockFromCbor(data []byte) (*BabbageBlock, error) {
@@ -95,6 +102,14 @@ func NewBabbageBlockHeaderFromCbor(data []byte) (*BabbageBlockHeader, error) {
 	}
 	babbageBlockHeader.id, err = generateBlockHeaderHash(data, nil)
 	return &babbageBlockHeader, err
+}
+
+func NewBabbageTransactionBodyFromCbor(data []byte) (*BabbageTransactionBody, error) {
+	var babbageTx BabbageTransactionBody
+	if err := cbor.Unmarshal(data, &babbageTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &babbageTx, nil
 }
 
 func NewBabbageTransactionFromCbor(data []byte) (*BabbageTransaction, error) {

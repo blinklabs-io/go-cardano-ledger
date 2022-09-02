@@ -17,7 +17,7 @@ type AlonzoBlock struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_                      struct{} `cbor:",toarray"`
 	Header                 ShelleyBlockHeader
-	TransactionBodies      []AlonzoTransaction
+	TransactionBodies      []AlonzoTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
 	// TODO: figure out how to parse properly
 	// We use RawMessage here because the content is arbitrary and can contain data that
@@ -30,8 +30,8 @@ func (b *AlonzoBlock) Id() string {
 	return b.Header.Id()
 }
 
-type AlonzoTransaction struct {
-	MaryTransaction
+type AlonzoTransactionBody struct {
+	MaryTransactionBody
 	ScriptDataHash  Blake2b256                `cbor:"11,keyasint,omitempty"`
 	Collateral      []ShelleyTransactionInput `cbor:"13,keyasint,omitempty"`
 	RequiredSigners []Blake2b224              `cbor:"14,keyasint,omitempty"`
@@ -48,6 +48,13 @@ type AlonzoTransactionWitnessSet struct {
 	Redeemers  []cbor.RawMessage `cbor:"5,keyasint,omitempty"`
 }
 
+type AlonzoTransaction struct {
+	Body       AlonzoTransactionBody
+	WitnessSet AlonzoTransactionWitnessSet
+	IsValid    bool
+	Metadata   interface{}
+}
+
 func NewAlonzoBlockFromCbor(data []byte) (*AlonzoBlock, error) {
 	var alonzoBlock AlonzoBlock
 	if err := cbor.Unmarshal(data, &alonzoBlock); err != nil {
@@ -59,6 +66,14 @@ func NewAlonzoBlockFromCbor(data []byte) (*AlonzoBlock, error) {
 	}
 	alonzoBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
 	return &alonzoBlock, err
+}
+
+func NewAlonzoTransactionBodyFromCbor(data []byte) (*AlonzoTransactionBody, error) {
+	var alonzoTx AlonzoTransactionBody
+	if err := cbor.Unmarshal(data, &alonzoTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &alonzoTx, nil
 }
 
 func NewAlonzoTransactionFromCbor(data []byte) (*AlonzoTransaction, error) {

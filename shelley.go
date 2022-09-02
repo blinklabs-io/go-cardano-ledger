@@ -17,7 +17,7 @@ type ShelleyBlock struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_                      struct{} `cbor:",toarray"`
 	Header                 ShelleyBlockHeader
-	TransactionBodies      []ShelleyTransaction
+	TransactionBodies      []ShelleyTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	// TODO: figure out how to parse properly
 	// We use RawMessage here because the content is arbitrary and can contain data that
@@ -59,7 +59,7 @@ func (h *ShelleyBlockHeader) Id() string {
 	return h.id
 }
 
-type ShelleyTransaction struct {
+type ShelleyTransactionBody struct {
 	Inputs  []ShelleyTransactionInput  `cbor:"0,keyasint,omitempty"`
 	Outputs []ShelleyTransactionOutput `cbor:"1,keyasint,omitempty"`
 	Fee     uint64                     `cbor:"2,keyasint,omitempty"`
@@ -102,6 +102,12 @@ type ShelleyTransactionWitnessSet struct {
 	BootstrapWitnesses []interface{} `cbor:"2,keyasint,omitempty"`
 }
 
+type ShelleyTransaction struct {
+	Body       ShelleyTransactionBody
+	WitnessSet ShelleyTransactionWitnessSet
+	Metadata   interface{}
+}
+
 func NewShelleyBlockFromCbor(data []byte) (*ShelleyBlock, error) {
 	var shelleyBlock ShelleyBlock
 	if err := cbor.Unmarshal(data, &shelleyBlock); err != nil {
@@ -123,6 +129,14 @@ func NewShelleyBlockHeaderFromCbor(data []byte) (*ShelleyBlockHeader, error) {
 	}
 	shelleyBlockHeader.id, err = generateBlockHeaderHash(data, nil)
 	return &shelleyBlockHeader, err
+}
+
+func NewShelleyTransactionBodyFromCbor(data []byte) (*ShelleyTransactionBody, error) {
+	var shelleyTx ShelleyTransactionBody
+	if err := cbor.Unmarshal(data, &shelleyTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &shelleyTx, nil
 }
 
 func NewShelleyTransactionFromCbor(data []byte) (*ShelleyTransaction, error) {
