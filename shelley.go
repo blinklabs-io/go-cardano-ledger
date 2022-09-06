@@ -103,9 +103,14 @@ type ShelleyTransactionWitnessSet struct {
 }
 
 type ShelleyTransaction struct {
+	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
+	_          struct{} `cbor:",toarray"`
 	Body       ShelleyTransactionBody
 	WitnessSet ShelleyTransactionWitnessSet
-	Metadata   interface{}
+	// TODO: figure out how to parse properly
+	// We use RawMessage here because the content is arbitrary and can contain data that
+	// cannot easily be represented in Go (such as maps with bytestring keys)
+	Metadata cbor.RawMessage
 }
 
 func NewShelleyBlockFromCbor(data []byte) (*ShelleyBlock, error) {
