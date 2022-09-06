@@ -17,7 +17,7 @@ type AllegraBlock struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_                      struct{} `cbor:",toarray"`
 	Header                 ShelleyBlockHeader
-	TransactionBodies      []AllegraTransaction
+	TransactionBodies      []AllegraTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	// TODO: figure out how to parse properly
 	// We use RawMessage here because the content is arbitrary and can contain data that
@@ -29,9 +29,15 @@ func (b *AllegraBlock) Id() string {
 	return b.Header.Id()
 }
 
-type AllegraTransaction struct {
-	ShelleyTransaction
+type AllegraTransactionBody struct {
+	ShelleyTransactionBody
 	ValidityIntervalStart uint64 `cbor:"8,keyasint,omitempty"`
+}
+
+type AllegraTransaction struct {
+	Body       AllegraTransactionBody
+	WitnessSet ShelleyTransactionWitnessSet
+	Metadata   interface{}
 }
 
 func NewAllegraBlockFromCbor(data []byte) (*AllegraBlock, error) {
@@ -45,6 +51,14 @@ func NewAllegraBlockFromCbor(data []byte) (*AllegraBlock, error) {
 	}
 	allegraBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
 	return &allegraBlock, err
+}
+
+func NewAllegraTransactionBodyFromCbor(data []byte) (*AllegraTransactionBody, error) {
+	var allegraTx AllegraTransactionBody
+	if err := cbor.Unmarshal(data, &allegraTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &allegraTx, nil
 }
 
 func NewAllegraTransactionFromCbor(data []byte) (*AllegraTransaction, error) {

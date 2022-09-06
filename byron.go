@@ -65,12 +65,15 @@ func (h *ByronMainBlockHeader) Id() string {
 }
 
 // TODO: flesh this out
+type ByronTransactionBody interface{}
+
+// TODO: flesh this out
 type ByronTransaction interface{}
 
 type ByronMainBlockBody struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_         struct{} `cbor:",toarray"`
-	TxPayload []ByronTransaction
+	TxPayload []ByronTransactionBody
 	// We keep this field as raw CBOR, since it contains a map with []byte
 	// keys, which Go doesn't allow
 	SscPayload cbor.RawMessage
@@ -182,6 +185,14 @@ func NewByronMainBlockHeaderFromCbor(data []byte) (*ByronMainBlockHeader, error)
 	// get the correct value
 	byronMainBlockHeader.id, err = generateBlockHeaderHash(data, []byte{0x82, BLOCK_TYPE_BYRON_MAIN})
 	return &byronMainBlockHeader, err
+}
+
+func NewByronTransactionBodyFromCbor(data []byte) (*ByronTransactionBody, error) {
+	var byronTx ByronTransactionBody
+	if err := cbor.Unmarshal(data, &byronTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &byronTx, nil
 }
 
 func NewByronTransactionFromCbor(data []byte) (*ByronTransaction, error) {

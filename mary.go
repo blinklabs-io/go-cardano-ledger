@@ -17,7 +17,7 @@ type MaryBlock struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_                      struct{} `cbor:",toarray"`
 	Header                 ShelleyBlockHeader
-	TransactionBodies      []MaryTransaction
+	TransactionBodies      []MaryTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	// TODO: figure out how to parse properly
 	// We use RawMessage here because the content is arbitrary and can contain data that
@@ -29,12 +29,18 @@ func (b *MaryBlock) Id() string {
 	return b.Header.Id()
 }
 
-type MaryTransaction struct {
-	AllegraTransaction
+type MaryTransactionBody struct {
+	AllegraTransactionBody
 	//Outputs []MaryTransactionOutput `cbor:"1,keyasint,omitempty"`
 	Outputs []cbor.RawMessage `cbor:"1,keyasint,omitempty"`
 	// TODO: further parsing of this field
 	Mint cbor.RawMessage `cbor:"9,keyasint,omitempty"`
+}
+
+type MaryTransaction struct {
+	Body       MaryTransactionBody
+	WitnessSet ShelleyTransactionWitnessSet
+	Metadata   interface{}
 }
 
 // TODO: support both forms
@@ -57,6 +63,14 @@ func NewMaryBlockFromCbor(data []byte) (*MaryBlock, error) {
 	}
 	maryBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
 	return &maryBlock, err
+}
+
+func NewMaryTransactionBodyFromCbor(data []byte) (*MaryTransactionBody, error) {
+	var maryTx MaryTransactionBody
+	if err := cbor.Unmarshal(data, &maryTx); err != nil {
+		return nil, fmt.Errorf("decode error: %s", err)
+	}
+	return &maryTx, nil
 }
 
 func NewMaryTransactionFromCbor(data []byte) (*MaryTransaction, error) {
