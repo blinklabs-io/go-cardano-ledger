@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 const (
@@ -19,10 +19,7 @@ type BabbageBlock struct {
 	Header                 BabbageBlockHeader
 	TransactionBodies      []BabbageTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	TransactionMetadataSet map[uint]cbor.RawMessage
+	TransactionMetadataSet map[uint]cbor.Value
 	InvalidTransactions    []uint
 }
 
@@ -80,15 +77,12 @@ type BabbageTransaction struct {
 	Body       BabbageTransactionBody
 	WitnessSet AlonzoTransactionWitnessSet
 	IsValid    bool
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	Metadata cbor.RawMessage
+	Metadata   cbor.Value
 }
 
 func NewBabbageBlockFromCbor(data []byte) (*BabbageBlock, error) {
 	var babbageBlock BabbageBlock
-	if err := cbor.Unmarshal(data, &babbageBlock); err != nil {
+	if _, err := cbor.Decode(data, &babbageBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
@@ -102,7 +96,7 @@ func NewBabbageBlockFromCbor(data []byte) (*BabbageBlock, error) {
 func NewBabbageBlockHeaderFromCbor(data []byte) (*BabbageBlockHeader, error) {
 	var err error
 	var babbageBlockHeader BabbageBlockHeader
-	if err := cbor.Unmarshal(data, &babbageBlockHeader); err != nil {
+	if _, err := cbor.Decode(data, &babbageBlockHeader); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	babbageBlockHeader.id, err = generateBlockHeaderHash(data, nil)
@@ -111,7 +105,7 @@ func NewBabbageBlockHeaderFromCbor(data []byte) (*BabbageBlockHeader, error) {
 
 func NewBabbageTransactionBodyFromCbor(data []byte) (*BabbageTransactionBody, error) {
 	var babbageTx BabbageTransactionBody
-	if err := cbor.Unmarshal(data, &babbageTx); err != nil {
+	if _, err := cbor.Decode(data, &babbageTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &babbageTx, nil
@@ -119,7 +113,7 @@ func NewBabbageTransactionBodyFromCbor(data []byte) (*BabbageTransactionBody, er
 
 func NewBabbageTransactionFromCbor(data []byte) (*BabbageTransaction, error) {
 	var babbageTx BabbageTransaction
-	if err := cbor.Unmarshal(data, &babbageTx); err != nil {
+	if _, err := cbor.Decode(data, &babbageTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &babbageTx, nil

@@ -3,7 +3,7 @@ package ledger
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -69,7 +69,7 @@ func generateBlockHeaderHash(data []byte, prefix []byte) (string, error) {
 func extractHeaderFromBlockCbor(data []byte) ([]byte, error) {
 	// Parse outer list to get at header CBOR
 	var rawBlock []cbor.RawMessage
-	if err := cbor.Unmarshal(data, &rawBlock); err != nil {
+	if _, err := cbor.Decode(data, &rawBlock); err != nil {
 		return nil, err
 	}
 	return []byte(rawBlock[0]), nil

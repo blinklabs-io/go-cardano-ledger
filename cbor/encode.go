@@ -2,12 +2,12 @@ package cbor
 
 import (
 	"bytes"
-	"github.com/fxamacker/cbor/v2"
+	_cbor "github.com/fxamacker/cbor/v2"
 )
 
 func Encode(data interface{}) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
-	em, err := cbor.CoreDetEncOptions().EncMode()
+	em, err := _cbor.CoreDetEncOptions().EncMode()
 	if err != nil {
 		return nil, err
 	}

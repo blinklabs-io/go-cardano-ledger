@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 const (
@@ -19,10 +19,7 @@ type MaryBlock struct {
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []MaryTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	TransactionMetadataSet map[uint]cbor.RawMessage
+	TransactionMetadataSet map[uint]cbor.Value
 }
 
 func (b *MaryBlock) Id() string {
@@ -32,9 +29,9 @@ func (b *MaryBlock) Id() string {
 type MaryTransactionBody struct {
 	AllegraTransactionBody
 	//Outputs []MaryTransactionOutput `cbor:"1,keyasint,omitempty"`
-	Outputs []cbor.RawMessage `cbor:"1,keyasint,omitempty"`
+	Outputs []cbor.Value `cbor:"1,keyasint,omitempty"`
 	// TODO: further parsing of this field
-	Mint cbor.RawMessage `cbor:"9,keyasint,omitempty"`
+	Mint cbor.Value `cbor:"9,keyasint,omitempty"`
 }
 
 type MaryTransaction struct {
@@ -42,10 +39,7 @@ type MaryTransaction struct {
 	_          struct{} `cbor:",toarray"`
 	Body       MaryTransactionBody
 	WitnessSet ShelleyTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	Metadata cbor.RawMessage
+	Metadata   cbor.Value
 }
 
 // TODO: support both forms
@@ -55,11 +49,11 @@ value = coin / [coin,multiasset<uint>]
 */
 //type MaryTransactionOutput interface{}
 
-type MaryTransactionOutput cbor.RawMessage
+type MaryTransactionOutput cbor.Value
 
 func NewMaryBlockFromCbor(data []byte) (*MaryBlock, error) {
 	var maryBlock MaryBlock
-	if err := cbor.Unmarshal(data, &maryBlock); err != nil {
+	if _, err := cbor.Decode(data, &maryBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
@@ -72,7 +66,7 @@ func NewMaryBlockFromCbor(data []byte) (*MaryBlock, error) {
 
 func NewMaryTransactionBodyFromCbor(data []byte) (*MaryTransactionBody, error) {
 	var maryTx MaryTransactionBody
-	if err := cbor.Unmarshal(data, &maryTx); err != nil {
+	if _, err := cbor.Decode(data, &maryTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &maryTx, nil
@@ -80,7 +74,7 @@ func NewMaryTransactionBodyFromCbor(data []byte) (*MaryTransactionBody, error) {
 
 func NewMaryTransactionFromCbor(data []byte) (*MaryTransaction, error) {
 	var maryTx MaryTransaction
-	if err := cbor.Unmarshal(data, &maryTx); err != nil {
+	if _, err := cbor.Decode(data, &maryTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &maryTx, nil

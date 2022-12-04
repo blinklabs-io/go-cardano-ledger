@@ -2,7 +2,7 @@ package cbor_test
 
 import (
 	"encoding/hex"
-	"github.com/cloudstruct/go-cardano-ledger/internal/cbor"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 	"reflect"
 	"testing"
 )
