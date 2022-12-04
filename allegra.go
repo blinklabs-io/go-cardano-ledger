@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 const (
@@ -19,10 +19,7 @@ type AllegraBlock struct {
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []AllegraTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	TransactionMetadataSet map[uint]cbor.RawMessage
+	TransactionMetadataSet map[uint]cbor.Value
 }
 
 func (b *AllegraBlock) Id() string {
@@ -39,15 +36,12 @@ type AllegraTransaction struct {
 	_          struct{} `cbor:",toarray"`
 	Body       AllegraTransactionBody
 	WitnessSet ShelleyTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	Metadata cbor.RawMessage
+	Metadata   cbor.Value
 }
 
 func NewAllegraBlockFromCbor(data []byte) (*AllegraBlock, error) {
 	var allegraBlock AllegraBlock
-	if err := cbor.Unmarshal(data, &allegraBlock); err != nil {
+	if _, err := cbor.Decode(data, &allegraBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
@@ -60,7 +54,7 @@ func NewAllegraBlockFromCbor(data []byte) (*AllegraBlock, error) {
 
 func NewAllegraTransactionBodyFromCbor(data []byte) (*AllegraTransactionBody, error) {
 	var allegraTx AllegraTransactionBody
-	if err := cbor.Unmarshal(data, &allegraTx); err != nil {
+	if _, err := cbor.Decode(data, &allegraTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &allegraTx, nil
@@ -68,7 +62,7 @@ func NewAllegraTransactionBodyFromCbor(data []byte) (*AllegraTransactionBody, er
 
 func NewAllegraTransactionFromCbor(data []byte) (*AllegraTransaction, error) {
 	var allegraTx AllegraTransaction
-	if err := cbor.Unmarshal(data, &allegraTx); err != nil {
+	if _, err := cbor.Decode(data, &allegraTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &allegraTx, nil

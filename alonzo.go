@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 const (
@@ -19,10 +19,7 @@ type AlonzoBlock struct {
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []AlonzoTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	TransactionMetadataSet map[uint]cbor.RawMessage
+	TransactionMetadataSet map[uint]cbor.Value
 	InvalidTransactions    []uint
 }
 
@@ -40,12 +37,9 @@ type AlonzoTransactionBody struct {
 
 type AlonzoTransactionWitnessSet struct {
 	ShelleyTransactionWitnessSet
-	PlutusScripts interface{} `cbor:"3,keyasint,omitempty"`
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	PlutusData []cbor.RawMessage `cbor:"4,keyasint,omitempty"`
-	Redeemers  []cbor.RawMessage `cbor:"5,keyasint,omitempty"`
+	PlutusScripts interface{}  `cbor:"3,keyasint,omitempty"`
+	PlutusData    []cbor.Value `cbor:"4,keyasint,omitempty"`
+	Redeemers     []cbor.Value `cbor:"5,keyasint,omitempty"`
 }
 
 type AlonzoTransaction struct {
@@ -54,15 +48,12 @@ type AlonzoTransaction struct {
 	Body       AlonzoTransactionBody
 	WitnessSet AlonzoTransactionWitnessSet
 	IsValid    bool
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	Metadata cbor.RawMessage
+	Metadata   cbor.Value
 }
 
 func NewAlonzoBlockFromCbor(data []byte) (*AlonzoBlock, error) {
 	var alonzoBlock AlonzoBlock
-	if err := cbor.Unmarshal(data, &alonzoBlock); err != nil {
+	if _, err := cbor.Decode(data, &alonzoBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
@@ -75,7 +66,7 @@ func NewAlonzoBlockFromCbor(data []byte) (*AlonzoBlock, error) {
 
 func NewAlonzoTransactionBodyFromCbor(data []byte) (*AlonzoTransactionBody, error) {
 	var alonzoTx AlonzoTransactionBody
-	if err := cbor.Unmarshal(data, &alonzoTx); err != nil {
+	if _, err := cbor.Decode(data, &alonzoTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &alonzoTx, nil
@@ -83,7 +74,7 @@ func NewAlonzoTransactionBodyFromCbor(data []byte) (*AlonzoTransactionBody, erro
 
 func NewAlonzoTransactionFromCbor(data []byte) (*AlonzoTransaction, error) {
 	var alonzoTx AlonzoTransaction
-	if err := cbor.Unmarshal(data, &alonzoTx); err != nil {
+	if _, err := cbor.Decode(data, &alonzoTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &alonzoTx, nil

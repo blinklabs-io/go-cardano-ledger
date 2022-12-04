@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 const (
@@ -19,10 +19,7 @@ type ShelleyBlock struct {
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []ShelleyTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	TransactionMetadataSet map[uint]cbor.RawMessage
+	TransactionMetadataSet map[uint]cbor.Value
 }
 
 func (b *ShelleyBlock) Id() string {
@@ -65,18 +62,15 @@ type ShelleyTransactionBody struct {
 	Fee     uint64                     `cbor:"2,keyasint,omitempty"`
 	Ttl     uint64                     `cbor:"3,keyasint,omitempty"`
 	// TODO: figure out how to parse properly
-	Certificates []cbor.RawMessage `cbor:"4,keyasint,omitempty"`
+	Certificates []cbor.Value `cbor:"4,keyasint,omitempty"`
 	// TODO: figure out how to parse this correctly
 	// We keep the raw CBOR because it can contain a map with []byte keys, which
 	// Go does not allow
-	Withdrawals cbor.RawMessage `cbor:"5,keyasint,omitempty"`
+	Withdrawals cbor.Value `cbor:"5,keyasint,omitempty"`
 	Update      struct {
 		// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-		_ struct{} `cbor:",toarray"`
-		// TODO: figure out how to parse properly
-		// We use RawMessage here because the content is arbitrary and can contain data that
-		// cannot easily be represented in Go (such as maps with bytestring keys)
-		ProtocolParamUpdates cbor.RawMessage
+		_                    struct{} `cbor:",toarray"`
+		ProtocolParamUpdates cbor.Value
 		Epoch                uint64
 	} `cbor:"6,keyasint,omitempty"`
 	MetadataHash Blake2b256 `cbor:"7,keyasint,omitempty"`
@@ -107,15 +101,12 @@ type ShelleyTransaction struct {
 	_          struct{} `cbor:",toarray"`
 	Body       ShelleyTransactionBody
 	WitnessSet ShelleyTransactionWitnessSet
-	// TODO: figure out how to parse properly
-	// We use RawMessage here because the content is arbitrary and can contain data that
-	// cannot easily be represented in Go (such as maps with bytestring keys)
-	Metadata cbor.RawMessage
+	Metadata   cbor.Value
 }
 
 func NewShelleyBlockFromCbor(data []byte) (*ShelleyBlock, error) {
 	var shelleyBlock ShelleyBlock
-	if err := cbor.Unmarshal(data, &shelleyBlock); err != nil {
+	if _, err := cbor.Decode(data, &shelleyBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
@@ -129,7 +120,7 @@ func NewShelleyBlockFromCbor(data []byte) (*ShelleyBlock, error) {
 func NewShelleyBlockHeaderFromCbor(data []byte) (*ShelleyBlockHeader, error) {
 	var err error
 	var shelleyBlockHeader ShelleyBlockHeader
-	if err := cbor.Unmarshal(data, &shelleyBlockHeader); err != nil {
+	if _, err := cbor.Decode(data, &shelleyBlockHeader); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	shelleyBlockHeader.id, err = generateBlockHeaderHash(data, nil)
@@ -138,7 +129,7 @@ func NewShelleyBlockHeaderFromCbor(data []byte) (*ShelleyBlockHeader, error) {
 
 func NewShelleyTransactionBodyFromCbor(data []byte) (*ShelleyTransactionBody, error) {
 	var shelleyTx ShelleyTransactionBody
-	if err := cbor.Unmarshal(data, &shelleyTx); err != nil {
+	if _, err := cbor.Decode(data, &shelleyTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &shelleyTx, nil
@@ -146,7 +137,7 @@ func NewShelleyTransactionBodyFromCbor(data []byte) (*ShelleyTransactionBody, er
 
 func NewShelleyTransactionFromCbor(data []byte) (*ShelleyTransaction, error) {
 	var shelleyTx ShelleyTransaction
-	if err := cbor.Unmarshal(data, &shelleyTx); err != nil {
+	if _, err := cbor.Decode(data, &shelleyTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &shelleyTx, nil

@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 const (
@@ -72,11 +72,9 @@ type ByronTransaction interface{}
 
 type ByronMainBlockBody struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_         struct{} `cbor:",toarray"`
-	TxPayload []ByronTransactionBody
-	// We keep this field as raw CBOR, since it contains a map with []byte
-	// keys, which Go doesn't allow
-	SscPayload cbor.RawMessage
+	_          struct{} `cbor:",toarray"`
+	TxPayload  []ByronTransactionBody
+	SscPayload cbor.Value
 	DlgPayload []interface{}
 	UpdPayload []interface{}
 }
@@ -131,7 +129,7 @@ func (b *ByronEpochBoundaryBlock) Id() string {
 
 func NewByronEpochBoundaryBlockFromCbor(data []byte) (*ByronEpochBoundaryBlock, error) {
 	var byronEbbBlock ByronEpochBoundaryBlock
-	if err := cbor.Unmarshal(data, &byronEbbBlock); err != nil {
+	if _, err := cbor.Decode(data, &byronEbbBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
@@ -148,7 +146,7 @@ func NewByronEpochBoundaryBlockFromCbor(data []byte) (*ByronEpochBoundaryBlock, 
 func NewByronEpochBoundaryBlockHeaderFromCbor(data []byte) (*ByronEpochBoundaryBlockHeader, error) {
 	var err error
 	var byronEbbBlockHeader ByronEpochBoundaryBlockHeader
-	if err := cbor.Unmarshal(data, &byronEbbBlockHeader); err != nil {
+	if _, err := cbor.Decode(data, &byronEbbBlockHeader); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	// Prepend bytes for CBOR list wrapper
@@ -160,7 +158,7 @@ func NewByronEpochBoundaryBlockHeaderFromCbor(data []byte) (*ByronEpochBoundaryB
 
 func NewByronMainBlockFromCbor(data []byte) (*ByronMainBlock, error) {
 	var byronMainBlock ByronMainBlock
-	if err := cbor.Unmarshal(data, &byronMainBlock); err != nil {
+	if _, err := cbor.Decode(data, &byronMainBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
@@ -177,7 +175,7 @@ func NewByronMainBlockFromCbor(data []byte) (*ByronMainBlock, error) {
 func NewByronMainBlockHeaderFromCbor(data []byte) (*ByronMainBlockHeader, error) {
 	var err error
 	var byronMainBlockHeader ByronMainBlockHeader
-	if err := cbor.Unmarshal(data, &byronMainBlockHeader); err != nil {
+	if _, err := cbor.Decode(data, &byronMainBlockHeader); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	// Prepend bytes for CBOR list wrapper
@@ -189,7 +187,7 @@ func NewByronMainBlockHeaderFromCbor(data []byte) (*ByronMainBlockHeader, error)
 
 func NewByronTransactionBodyFromCbor(data []byte) (*ByronTransactionBody, error) {
 	var byronTx ByronTransactionBody
-	if err := cbor.Unmarshal(data, &byronTx); err != nil {
+	if _, err := cbor.Decode(data, &byronTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &byronTx, nil
@@ -197,7 +195,7 @@ func NewByronTransactionBodyFromCbor(data []byte) (*ByronTransactionBody, error)
 
 func NewByronTransactionFromCbor(data []byte) (*ByronTransaction, error) {
 	var byronTx ByronTransaction
-	if err := cbor.Unmarshal(data, &byronTx); err != nil {
+	if _, err := cbor.Decode(data, &byronTx); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
 	return &byronTx, nil
