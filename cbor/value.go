@@ -1,14 +1,5 @@
 package cbor
 
-const (
-	CBOR_TYPE_BYTE_STRING uint8 = 0x40
-	CBOR_TYPE_TEXT_STRING uint8 = 0x60
-	CBOR_TYPE_ARRAY       uint8 = 0x80
-	CBOR_TYPE_MAP         uint8 = 0xa0
-
-	CBOR_TYPE_MASK uint8 = 0xe0
-)
-
 // Helpful wrapper for parsing arbitrary CBOR data which may contain types that
 // cannot be easily represented in Go (such as maps with bytestring keys)
 type Value struct {
