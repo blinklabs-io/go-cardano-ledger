@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	ERA_ID_SHELLEY = 1
+
 	BLOCK_TYPE_SHELLEY = 2
 
 	BLOCK_HEADER_TYPE_SHELLEY = 1
@@ -14,8 +16,7 @@ const (
 )
 
 type ShelleyBlock struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_                      struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []ShelleyTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
@@ -27,12 +28,10 @@ func (b *ShelleyBlock) Id() string {
 }
 
 type ShelleyBlockHeader struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_    struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	id   string
 	Body struct {
-		// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-		_                    struct{} `cbor:",toarray"`
+		cbor.StructAsArray
 		BlockNumber          uint64
 		Slot                 uint64
 		PrevHash             Blake2b256
@@ -68,8 +67,7 @@ type ShelleyTransactionBody struct {
 	// Go does not allow
 	Withdrawals cbor.Value `cbor:"5,keyasint,omitempty"`
 	Update      struct {
-		// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-		_                    struct{} `cbor:",toarray"`
+		cbor.StructAsArray
 		ProtocolParamUpdates cbor.Value
 		Epoch                uint64
 	} `cbor:"6,keyasint,omitempty"`
@@ -77,15 +75,13 @@ type ShelleyTransactionBody struct {
 }
 
 type ShelleyTransactionInput struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_     struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Id    Blake2b256
 	Index uint32
 }
 
 type ShelleyTransactionOutput struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_       struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Address Blake2b256
 	Amount  uint64
 }
@@ -97,8 +93,7 @@ type ShelleyTransactionWitnessSet struct {
 }
 
 type ShelleyTransaction struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_          struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Body       ShelleyTransactionBody
 	WitnessSet ShelleyTransactionWitnessSet
 	Metadata   cbor.Value

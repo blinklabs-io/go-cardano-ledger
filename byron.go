@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	ERA_ID_BYRON = 0
+
 	BLOCK_TYPE_BYRON_EBB  = 0
 	BLOCK_TYPE_BYRON_MAIN = 1
 
@@ -15,43 +17,36 @@ const (
 )
 
 type ByronMainBlockHeader struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_             struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	id            string
 	ProtocolMagic uint32
 	PrevBlock     Blake2b256
 	BodyProof     interface{}
 	ConsensusData struct {
-		// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-		_ struct{} `cbor:",toarray"`
+		cbor.StructAsArray
 		// [slotid, pubkey, difficulty, blocksig]
 		SlotId struct {
-			// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-			_     struct{} `cbor:",toarray"`
+			cbor.StructAsArray
 			Epoch uint64
 			Slot  uint16
 		}
 		PubKey     []byte
 		Difficulty struct {
-			// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-			_       struct{} `cbor:",toarray"`
+			cbor.StructAsArray
 			Unknown uint64
 		}
 		BlockSig []interface{}
 	}
 	ExtraData struct {
-		// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-		_            struct{} `cbor:",toarray"`
+		cbor.StructAsArray
 		BlockVersion struct {
-			// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-			_       struct{} `cbor:",toarray"`
+			cbor.StructAsArray
 			Major   uint16
 			Minor   uint16
 			Unknown uint8
 		}
 		SoftwareVersion struct {
-			// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-			_       struct{} `cbor:",toarray"`
+			cbor.StructAsArray
 			Name    string
 			Unknown uint32
 		}
@@ -71,8 +66,7 @@ type ByronTransactionBody interface{}
 type ByronTransaction interface{}
 
 type ByronMainBlockBody struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_          struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	TxPayload  []ByronTransactionBody
 	SscPayload cbor.Value
 	DlgPayload []interface{}
@@ -80,19 +74,16 @@ type ByronMainBlockBody struct {
 }
 
 type ByronEpochBoundaryBlockHeader struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_             struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	id            string
 	ProtocolMagic uint32
 	PrevBlock     Blake2b256
 	BodyProof     interface{}
 	ConsensusData struct {
-		// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-		_          struct{} `cbor:",toarray"`
+		cbor.StructAsArray
 		Epoch      uint64
 		Difficulty struct {
-			// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-			_     struct{} `cbor:",toarray"`
+			cbor.StructAsArray
 			Value uint64
 		}
 	}
@@ -104,8 +95,7 @@ func (h *ByronEpochBoundaryBlockHeader) Id() string {
 }
 
 type ByronMainBlock struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_      struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Header ByronMainBlockHeader
 	Body   ByronMainBlockBody
 	Extra  []interface{}
@@ -116,8 +106,7 @@ func (b *ByronMainBlock) Id() string {
 }
 
 type ByronEpochBoundaryBlock struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_      struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Header ByronEpochBoundaryBlockHeader
 	Body   []Blake2b224
 	Extra  []interface{}
