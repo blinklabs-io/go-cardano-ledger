@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	ERA_ID_ALONZO = 4
+
 	BLOCK_TYPE_ALONZO = 5
 
 	BLOCK_HEADER_TYPE_ALONZO = 4
@@ -14,8 +16,7 @@ const (
 )
 
 type AlonzoBlock struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_                      struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []AlonzoTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
@@ -43,8 +44,7 @@ type AlonzoTransactionWitnessSet struct {
 }
 
 type AlonzoTransaction struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_          struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Body       AlonzoTransactionBody
 	WitnessSet AlonzoTransactionWitnessSet
 	IsValid    bool

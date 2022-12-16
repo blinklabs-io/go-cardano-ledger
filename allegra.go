@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	ERA_ID_ALLEGRA = 2
+
 	BLOCK_TYPE_ALLEGRA = 3
 
 	BLOCK_HEADER_TYPE_ALLEGRA = 2
@@ -14,8 +16,7 @@ const (
 )
 
 type AllegraBlock struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_                      struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []AllegraTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
@@ -32,8 +33,7 @@ type AllegraTransactionBody struct {
 }
 
 type AllegraTransaction struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_          struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Body       AllegraTransactionBody
 	WitnessSet ShelleyTransactionWitnessSet
 	Metadata   cbor.Value
