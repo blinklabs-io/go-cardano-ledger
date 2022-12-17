@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	ERA_ID_MARY = 3
+
 	BLOCK_TYPE_MARY = 4
 
 	BLOCK_HEADER_TYPE_MARY = 3
@@ -14,8 +16,7 @@ const (
 )
 
 type MaryBlock struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_                      struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Header                 ShelleyBlockHeader
 	TransactionBodies      []MaryTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
@@ -35,8 +36,7 @@ type MaryTransactionBody struct {
 }
 
 type MaryTransaction struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_          struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Body       MaryTransactionBody
 	WitnessSet ShelleyTransactionWitnessSet
 	Metadata   cbor.Value

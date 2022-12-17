@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	ERA_ID_BABBAGE = 5
+
 	BLOCK_TYPE_BABBAGE = 6
 
 	BLOCK_HEADER_TYPE_BABBAGE = 5
@@ -14,8 +16,7 @@ const (
 )
 
 type BabbageBlock struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_                      struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Header                 BabbageBlockHeader
 	TransactionBodies      []BabbageTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
@@ -28,12 +29,10 @@ func (b *BabbageBlock) Id() string {
 }
 
 type BabbageBlockHeader struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_    struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	id   string
 	Body struct {
-		// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-		_             struct{} `cbor:",toarray"`
+		cbor.StructAsArray
 		BlockNumber   uint64
 		Slot          uint64
 		PrevHash      Blake2b256
@@ -43,16 +42,14 @@ type BabbageBlockHeader struct {
 		BlockBodySize uint32
 		BlockBodyHash Blake2b256
 		OpCert        struct {
-			// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-			_              struct{} `cbor:",toarray"`
+			cbor.StructAsArray
 			HotVkey        interface{}
 			SequenceNumber uint32
 			KesPeriod      uint32
 			Signature      interface{}
 		}
 		ProtoVersion struct {
-			// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-			_     struct{} `cbor:",toarray"`
+			cbor.StructAsArray
 			Major uint64
 			Minor uint64
 		}
@@ -72,8 +69,7 @@ type BabbageTransactionBody struct {
 }
 
 type BabbageTransaction struct {
-	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
-	_          struct{} `cbor:",toarray"`
+	cbor.StructAsArray
 	Body       BabbageTransactionBody
 	WitnessSet AlonzoTransactionWitnessSet
 	IsValid    bool

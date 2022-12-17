@@ -22,5 +22,6 @@ type RawMessage = _cbor.RawMessage
 
 // Useful for embedding and easier to remember
 type StructAsArray struct {
+	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_ struct{} `cbor:",toarray"`
 }
