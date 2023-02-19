@@ -17,14 +17,31 @@ const (
 
 type ShelleyBlock struct {
 	cbor.StructAsArray
-	Header                 ShelleyBlockHeader
+	Header                 *ShelleyBlockHeader
 	TransactionBodies      []ShelleyTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
 }
 
-func (b *ShelleyBlock) Id() string {
-	return b.Header.Id()
+func (b *ShelleyBlock) Hash() string {
+	return b.Header.Hash()
+}
+
+func (b *ShelleyBlock) BlockNumber() uint64 {
+	return b.Header.BlockNumber()
+}
+
+func (b *ShelleyBlock) SlotNumber() uint64 {
+	return b.Header.SlotNumber()
+}
+
+func (b *ShelleyBlock) Era() Era {
+	return eras[ERA_ID_SHELLEY]
+}
+
+func (b *ShelleyBlock) Transactions() []Transaction {
+	// TODO
+	return nil
 }
 
 type ShelleyBlockHeader struct {
@@ -51,8 +68,20 @@ type ShelleyBlockHeader struct {
 	Signature interface{}
 }
 
-func (h *ShelleyBlockHeader) Id() string {
+func (h *ShelleyBlockHeader) Hash() string {
 	return h.id
+}
+
+func (h *ShelleyBlockHeader) BlockNumber() uint64 {
+	return h.Body.BlockNumber
+}
+
+func (h *ShelleyBlockHeader) SlotNumber() uint64 {
+	return h.Body.Slot
+}
+
+func (h *ShelleyBlockHeader) Era() Era {
+	return eras[ERA_ID_SHELLEY]
 }
 
 type ShelleyTransactionBody struct {

@@ -7,6 +7,18 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+type Block interface {
+	BlockHeader
+	Transactions() []Transaction
+}
+
+type BlockHeader interface {
+	Hash() string
+	BlockNumber() uint64
+	SlotNumber() uint64
+	Era() Era
+}
+
 type Blake2b256 [32]byte
 
 func (b Blake2b256) String() string {
@@ -19,7 +31,7 @@ func (b Blake2b224) String() string {
 	return hex.EncodeToString([]byte(b[:]))
 }
 
-func NewBlockFromCbor(blockType uint, data []byte) (interface{}, error) {
+func NewBlockFromCbor(blockType uint, data []byte) (Block, error) {
 	switch blockType {
 	case BLOCK_TYPE_BYRON_EBB:
 		return NewByronEpochBoundaryBlockFromCbor(data)
@@ -40,7 +52,7 @@ func NewBlockFromCbor(blockType uint, data []byte) (interface{}, error) {
 }
 
 // XXX: should this take the block header type instead?
-func NewBlockHeaderFromCbor(blockType uint, data []byte) (interface{}, error) {
+func NewBlockHeaderFromCbor(blockType uint, data []byte) (BlockHeader, error) {
 	switch blockType {
 	case BLOCK_TYPE_BYRON_EBB:
 		return NewByronEpochBoundaryBlockHeaderFromCbor(data)

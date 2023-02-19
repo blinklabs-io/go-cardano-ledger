@@ -17,14 +17,39 @@ const (
 
 type MaryBlock struct {
 	cbor.StructAsArray
-	Header                 ShelleyBlockHeader
+	Header                 *MaryBlockHeader
 	TransactionBodies      []MaryTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
 }
 
-func (b *MaryBlock) Id() string {
-	return b.Header.Id()
+func (b *MaryBlock) Hash() string {
+	return b.Header.Hash()
+}
+
+func (b *MaryBlock) BlockNumber() uint64 {
+	return b.Header.BlockNumber()
+}
+
+func (b *MaryBlock) SlotNumber() uint64 {
+	return b.Header.SlotNumber()
+}
+
+func (b *MaryBlock) Era() Era {
+	return eras[ERA_ID_MARY]
+}
+
+func (b *MaryBlock) Transactions() []Transaction {
+	// TODO
+	return nil
+}
+
+type MaryBlockHeader struct {
+	ShelleyBlockHeader
+}
+
+func (h *MaryBlockHeader) Era() Era {
+	return eras[ERA_ID_MARY]
 }
 
 type MaryTransactionBody struct {

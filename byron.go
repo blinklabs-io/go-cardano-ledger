@@ -55,8 +55,21 @@ type ByronMainBlockHeader struct {
 	}
 }
 
-func (h *ByronMainBlockHeader) Id() string {
+func (h *ByronMainBlockHeader) Hash() string {
 	return h.id
+}
+
+func (h *ByronMainBlockHeader) BlockNumber() uint64 {
+	// Byron blocks don't store the block number in the block
+	return 0
+}
+
+func (h *ByronMainBlockHeader) SlotNumber() uint64 {
+	return uint64(h.ConsensusData.SlotId.Slot)
+}
+
+func (h *ByronMainBlockHeader) Era() Era {
+	return eras[ERA_ID_BYRON]
 }
 
 // TODO: flesh this out
@@ -90,30 +103,78 @@ type ByronEpochBoundaryBlockHeader struct {
 	ExtraData interface{}
 }
 
-func (h *ByronEpochBoundaryBlockHeader) Id() string {
+func (h *ByronEpochBoundaryBlockHeader) Hash() string {
 	return h.id
+}
+
+func (h *ByronEpochBoundaryBlockHeader) BlockNumber() uint64 {
+	// Byron blocks don't store the block number in the block
+	return 0
+}
+
+func (h *ByronEpochBoundaryBlockHeader) SlotNumber() uint64 {
+	// There is no slot on boundary blocks
+	return 0
+}
+
+func (h *ByronEpochBoundaryBlockHeader) Era() Era {
+	return eras[ERA_ID_BYRON]
 }
 
 type ByronMainBlock struct {
 	cbor.StructAsArray
-	Header ByronMainBlockHeader
+	Header *ByronMainBlockHeader
 	Body   ByronMainBlockBody
 	Extra  []interface{}
 }
 
-func (b *ByronMainBlock) Id() string {
-	return b.Header.Id()
+func (b *ByronMainBlock) Hash() string {
+	return b.Header.Hash()
+}
+
+func (b *ByronMainBlock) BlockNumber() uint64 {
+	return b.Header.BlockNumber()
+}
+
+func (b *ByronMainBlock) SlotNumber() uint64 {
+	return b.Header.SlotNumber()
+}
+
+func (b *ByronMainBlock) Era() Era {
+	return b.Header.Era()
+}
+
+func (b *ByronMainBlock) Transactions() []Transaction {
+	// TODO
+	return nil
 }
 
 type ByronEpochBoundaryBlock struct {
 	cbor.StructAsArray
-	Header ByronEpochBoundaryBlockHeader
+	Header *ByronEpochBoundaryBlockHeader
 	Body   []Blake2b224
 	Extra  []interface{}
 }
 
-func (b *ByronEpochBoundaryBlock) Id() string {
-	return b.Header.Id()
+func (b *ByronEpochBoundaryBlock) Hash() string {
+	return b.Header.Hash()
+}
+
+func (b *ByronEpochBoundaryBlock) BlockNumber() uint64 {
+	return b.Header.BlockNumber()
+}
+
+func (b *ByronEpochBoundaryBlock) SlotNumber() uint64 {
+	return b.Header.SlotNumber()
+}
+
+func (b *ByronEpochBoundaryBlock) Era() Era {
+	return b.Header.Era()
+}
+
+func (b *ByronEpochBoundaryBlock) Transactions() []Transaction {
+	// Boundary blocks don't have transactions
+	return nil
 }
 
 func NewByronEpochBoundaryBlockFromCbor(data []byte) (*ByronEpochBoundaryBlock, error) {

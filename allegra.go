@@ -17,14 +17,39 @@ const (
 
 type AllegraBlock struct {
 	cbor.StructAsArray
-	Header                 ShelleyBlockHeader
+	Header                 *AllegraBlockHeader
 	TransactionBodies      []AllegraTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
 }
 
-func (b *AllegraBlock) Id() string {
-	return b.Header.Id()
+func (b *AllegraBlock) Hash() string {
+	return b.Header.Hash()
+}
+
+func (b *AllegraBlock) BlockNumber() uint64 {
+	return b.Header.BlockNumber()
+}
+
+func (b *AllegraBlock) SlotNumber() uint64 {
+	return b.Header.SlotNumber()
+}
+
+func (b *AllegraBlock) Era() Era {
+	return eras[ERA_ID_ALLEGRA]
+}
+
+func (b *AllegraBlock) Transactions() []Transaction {
+	// TODO
+	return nil
+}
+
+type AllegraBlockHeader struct {
+	ShelleyBlockHeader
+}
+
+func (h *AllegraBlockHeader) Era() Era {
+	return eras[ERA_ID_ALLEGRA]
 }
 
 type AllegraTransactionBody struct {

@@ -17,15 +17,40 @@ const (
 
 type AlonzoBlock struct {
 	cbor.StructAsArray
-	Header                 ShelleyBlockHeader
+	Header                 *AlonzoBlockHeader
 	TransactionBodies      []AlonzoTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
 	InvalidTransactions    []uint
 }
 
-func (b *AlonzoBlock) Id() string {
-	return b.Header.Id()
+func (b *AlonzoBlock) Hash() string {
+	return b.Header.Hash()
+}
+
+func (b *AlonzoBlock) BlockNumber() uint64 {
+	return b.Header.BlockNumber()
+}
+
+func (b *AlonzoBlock) SlotNumber() uint64 {
+	return b.Header.SlotNumber()
+}
+
+func (b *AlonzoBlock) Era() Era {
+	return eras[ERA_ID_ALONZO]
+}
+
+func (b *AlonzoBlock) Transactions() []Transaction {
+	// TODO
+	return nil
+}
+
+type AlonzoBlockHeader struct {
+	ShelleyBlockHeader
+}
+
+func (h *AlonzoBlockHeader) Era() Era {
+	return eras[ERA_ID_ALONZO]
 }
 
 type AlonzoTransactionBody struct {
