@@ -17,15 +17,32 @@ const (
 
 type BabbageBlock struct {
 	cbor.StructAsArray
-	Header                 BabbageBlockHeader
+	Header                 *BabbageBlockHeader
 	TransactionBodies      []BabbageTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
 	InvalidTransactions    []uint
 }
 
-func (b *BabbageBlock) Id() string {
-	return b.Header.Id()
+func (b *BabbageBlock) Hash() string {
+	return b.Header.Hash()
+}
+
+func (b *BabbageBlock) BlockNumber() uint64 {
+	return b.Header.BlockNumber()
+}
+
+func (b *BabbageBlock) SlotNumber() uint64 {
+	return b.Header.SlotNumber()
+}
+
+func (b *BabbageBlock) Era() Era {
+	return eras[ERA_ID_BABBAGE]
+}
+
+func (b *BabbageBlock) Transactions() []Transaction {
+	// TODO
+	return nil
 }
 
 type BabbageBlockHeader struct {
@@ -57,8 +74,20 @@ type BabbageBlockHeader struct {
 	Signature interface{}
 }
 
-func (h *BabbageBlockHeader) Id() string {
+func (h *BabbageBlockHeader) Hash() string {
 	return h.id
+}
+
+func (h *BabbageBlockHeader) BlockNumber() uint64 {
+	return h.Body.BlockNumber
+}
+
+func (h *BabbageBlockHeader) SlotNumber() uint64 {
+	return h.Body.Slot
+}
+
+func (h *BabbageBlockHeader) Era() Era {
+	return eras[ERA_ID_BABBAGE]
 }
 
 type BabbageTransactionBody struct {

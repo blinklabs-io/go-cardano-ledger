@@ -4,6 +4,10 @@ import (
 	"fmt"
 )
 
+type Transaction interface {
+	// TODO: add methods for hash, inputs, outputs, etc.
+}
+
 func NewTransactionFromCbor(txType uint, data []byte) (interface{}, error) {
 	switch txType {
 	case TX_TYPE_BYRON:
