@@ -3,6 +3,7 @@ package cbor
 import (
 	"bytes"
 	"fmt"
+
 	_cbor "github.com/fxamacker/cbor/v2"
 )
 

@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"fmt"
+
 	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
@@ -17,10 +18,15 @@ const (
 
 type ShelleyBlock struct {
 	cbor.StructAsArray
+	cbor.DecodeStoreCbor
 	Header                 *ShelleyBlockHeader
 	TransactionBodies      []ShelleyTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
+}
+
+func (b *ShelleyBlock) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 func (b *ShelleyBlock) Hash() string {
@@ -46,7 +52,8 @@ func (b *ShelleyBlock) Transactions() []Transaction {
 
 type ShelleyBlockHeader struct {
 	cbor.StructAsArray
-	id   string
+	cbor.DecodeStoreCbor
+	hash string
 	Body struct {
 		cbor.StructAsArray
 		BlockNumber          uint64
@@ -68,8 +75,15 @@ type ShelleyBlockHeader struct {
 	Signature interface{}
 }
 
+func (h *ShelleyBlockHeader) UnmarshalCBOR(cborData []byte) error {
+	return h.UnmarshalCborGeneric(cborData, h)
+}
+
 func (h *ShelleyBlockHeader) Hash() string {
-	return h.id
+	if h.hash == "" {
+		h.hash = generateBlockHeaderHash(h.Cbor(), nil)
+	}
+	return h.hash
 }
 
 func (h *ShelleyBlockHeader) BlockNumber() uint64 {
@@ -85,6 +99,7 @@ func (h *ShelleyBlockHeader) Era() Era {
 }
 
 type ShelleyTransactionBody struct {
+	cbor.DecodeStoreCbor
 	Inputs  []ShelleyTransactionInput  `cbor:"0,keyasint,omitempty"`
 	Outputs []ShelleyTransactionOutput `cbor:"1,keyasint,omitempty"`
 	Fee     uint64                     `cbor:"2,keyasint,omitempty"`
@@ -101,6 +116,10 @@ type ShelleyTransactionBody struct {
 		Epoch                uint64
 	} `cbor:"6,keyasint,omitempty"`
 	MetadataHash Blake2b256 `cbor:"7,keyasint,omitempty"`
+}
+
+func (b *ShelleyTransactionBody) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 type ShelleyTransactionInput struct {
@@ -133,22 +152,15 @@ func NewShelleyBlockFromCbor(data []byte) (*ShelleyBlock, error) {
 	if _, err := cbor.Decode(data, &shelleyBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
-	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
-	if err != nil {
-		return nil, err
-	}
-	shelleyBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
-	return &shelleyBlock, err
+	return &shelleyBlock, nil
 }
 
 func NewShelleyBlockHeaderFromCbor(data []byte) (*ShelleyBlockHeader, error) {
-	var err error
 	var shelleyBlockHeader ShelleyBlockHeader
 	if _, err := cbor.Decode(data, &shelleyBlockHeader); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
-	shelleyBlockHeader.id, err = generateBlockHeaderHash(data, nil)
-	return &shelleyBlockHeader, err
+	return &shelleyBlockHeader, nil
 }
 
 func NewShelleyTransactionBodyFromCbor(data []byte) (*ShelleyTransactionBody, error) {

@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"fmt"
+
 	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
@@ -17,11 +18,16 @@ const (
 
 type AlonzoBlock struct {
 	cbor.StructAsArray
+	cbor.DecodeStoreCbor
 	Header                 *AlonzoBlockHeader
 	TransactionBodies      []AlonzoTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
 	InvalidTransactions    []uint
+}
+
+func (b *AlonzoBlock) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 func (b *AlonzoBlock) Hash() string {
@@ -81,12 +87,7 @@ func NewAlonzoBlockFromCbor(data []byte) (*AlonzoBlock, error) {
 	if _, err := cbor.Decode(data, &alonzoBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
-	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
-	if err != nil {
-		return nil, err
-	}
-	alonzoBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
-	return &alonzoBlock, err
+	return &alonzoBlock, nil
 }
 
 func NewAlonzoTransactionBodyFromCbor(data []byte) (*AlonzoTransactionBody, error) {

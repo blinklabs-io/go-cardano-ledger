@@ -1,7 +1,11 @@
 package cbor
 
 import (
+	"fmt"
+	"reflect"
+
 	_cbor "github.com/fxamacker/cbor/v2"
+	"github.com/jinzhu/copier"
 )
 
 const (
@@ -24,4 +28,47 @@ type RawMessage = _cbor.RawMessage
 type StructAsArray struct {
 	// Tells the CBOR decoder to convert to/from a struct and a CBOR array
 	_ struct{} `cbor:",toarray"`
+}
+
+type DecodeStoreCbor struct {
+	cborData []byte
+}
+
+// Cbor returns the original CBOR for the object
+func (d *DecodeStoreCbor) Cbor() []byte {
+	return d.cborData
+}
+
+// UnmarshalCborGeneric decodes the specified CBOR into the destination object without using the
+// destination object's UnmarshalCBOR() function
+func (d *DecodeStoreCbor) UnmarshalCborGeneric(cborData []byte, dest interface{}) error {
+	// Store a copy of the original CBOR data
+	d.cborData = make([]byte, len(cborData))
+	copy(d.cborData, cborData)
+	// Create a duplicate(-ish) struct from the destination
+	// We do this so that we can bypass any custom UnmarshalCBOR() function on the
+	// destination object
+	valueDest := reflect.ValueOf(dest)
+	if valueDest.Kind() != reflect.Pointer || valueDest.Elem().Kind() != reflect.Struct {
+		return fmt.Errorf("destination must be a pointer to a struct")
+	}
+	typeDestElem := valueDest.Elem().Type()
+	destTypeFields := []reflect.StructField{}
+	for i := 0; i < typeDestElem.NumField(); i++ {
+		tmpField := typeDestElem.Field(i)
+		if tmpField.IsExported() && tmpField.Name != "DecodeStoreCbor" {
+			destTypeFields = append(destTypeFields, tmpField)
+		}
+	}
+	// Create temporary object with the type created above
+	tmpDest := reflect.New(reflect.StructOf(destTypeFields))
+	// Decode CBOR into temporary object
+	if _, err := Decode(cborData, tmpDest.Interface()); err != nil {
+		return err
+	}
+	// Copy values from temporary object into destination object
+	if err := copier.Copy(dest, tmpDest.Interface()); err != nil {
+		return err
+	}
+	return nil
 }

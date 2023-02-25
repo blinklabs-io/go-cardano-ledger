@@ -2,8 +2,9 @@ package cbor_test
 
 import (
 	"encoding/hex"
-	"github.com/cloudstruct/go-cardano-ledger/cbor"
 	"testing"
+
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 type encodeTestDefinition struct {

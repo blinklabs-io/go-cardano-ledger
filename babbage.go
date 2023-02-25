@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"fmt"
+
 	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
@@ -17,11 +18,16 @@ const (
 
 type BabbageBlock struct {
 	cbor.StructAsArray
+	cbor.DecodeStoreCbor
 	Header                 *BabbageBlockHeader
 	TransactionBodies      []BabbageTransactionBody
 	TransactionWitnessSets []AlonzoTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
 	InvalidTransactions    []uint
+}
+
+func (b *BabbageBlock) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 func (b *BabbageBlock) Hash() string {
@@ -47,7 +53,8 @@ func (b *BabbageBlock) Transactions() []Transaction {
 
 type BabbageBlockHeader struct {
 	cbor.StructAsArray
-	id   string
+	cbor.DecodeStoreCbor
+	hash string
 	Body struct {
 		cbor.StructAsArray
 		BlockNumber   uint64
@@ -74,8 +81,15 @@ type BabbageBlockHeader struct {
 	Signature interface{}
 }
 
+func (h *BabbageBlockHeader) UnmarshalCBOR(cborData []byte) error {
+	return h.UnmarshalCborGeneric(cborData, h)
+}
+
 func (h *BabbageBlockHeader) Hash() string {
-	return h.id
+	if h.hash == "" {
+		h.hash = generateBlockHeaderHash(h.Cbor(), nil)
+	}
+	return h.hash
 }
 
 func (h *BabbageBlockHeader) BlockNumber() uint64 {
@@ -110,22 +124,15 @@ func NewBabbageBlockFromCbor(data []byte) (*BabbageBlock, error) {
 	if _, err := cbor.Decode(data, &babbageBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
-	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
-	if err != nil {
-		return nil, err
-	}
-	babbageBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
-	return &babbageBlock, err
+	return &babbageBlock, nil
 }
 
 func NewBabbageBlockHeaderFromCbor(data []byte) (*BabbageBlockHeader, error) {
-	var err error
 	var babbageBlockHeader BabbageBlockHeader
 	if _, err := cbor.Decode(data, &babbageBlockHeader); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
-	babbageBlockHeader.id, err = generateBlockHeaderHash(data, nil)
-	return &babbageBlockHeader, err
+	return &babbageBlockHeader, nil
 }
 
 func NewBabbageTransactionBodyFromCbor(data []byte) (*BabbageTransactionBody, error) {
