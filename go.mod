@@ -1,9 +1,10 @@
 module github.com/cloudstruct/go-cardano-ledger
 
-go 1.17
+go 1.18
 
 require (
 	github.com/fxamacker/cbor/v2 v2.4.0
+	github.com/jinzhu/copier v0.3.5
 	golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
 )
 

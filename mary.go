@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"fmt"
+
 	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
@@ -17,10 +18,15 @@ const (
 
 type MaryBlock struct {
 	cbor.StructAsArray
+	cbor.DecodeStoreCbor
 	Header                 *MaryBlockHeader
 	TransactionBodies      []MaryTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
+}
+
+func (b *MaryBlock) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 func (b *MaryBlock) Hash() string {
@@ -81,12 +87,7 @@ func NewMaryBlockFromCbor(data []byte) (*MaryBlock, error) {
 	if _, err := cbor.Decode(data, &maryBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
-	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
-	if err != nil {
-		return nil, err
-	}
-	maryBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
-	return &maryBlock, err
+	return &maryBlock, nil
 }
 
 func NewMaryTransactionBodyFromCbor(data []byte) (*MaryTransactionBody, error) {

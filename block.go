@@ -3,7 +3,7 @@ package ledger
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/cloudstruct/go-cardano-ledger/cbor"
+
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -17,6 +17,7 @@ type BlockHeader interface {
 	BlockNumber() uint64
 	SlotNumber() uint64
 	Era() Era
+	Cbor() []byte
 }
 
 type Blake2b256 [32]byte
@@ -58,6 +59,7 @@ func NewBlockHeaderFromCbor(blockType uint, data []byte) (BlockHeader, error) {
 		return NewByronEpochBoundaryBlockHeaderFromCbor(data)
 	case BLOCK_TYPE_BYRON_MAIN:
 		return NewByronMainBlockHeaderFromCbor(data)
+	// TODO: break into separate cases and parse as specific block header types
 	case BLOCK_TYPE_SHELLEY, BLOCK_TYPE_ALLEGRA, BLOCK_TYPE_MARY, BLOCK_TYPE_ALONZO:
 		return NewShelleyBlockHeaderFromCbor(data)
 	case BLOCK_TYPE_BABBAGE:
@@ -66,23 +68,13 @@ func NewBlockHeaderFromCbor(blockType uint, data []byte) (BlockHeader, error) {
 	return nil, fmt.Errorf("unknown node-to-node block type: %d", blockType)
 }
 
-func generateBlockHeaderHash(data []byte, prefix []byte) (string, error) {
-	tmpHash, err := blake2b.New256(nil)
-	if err != nil {
-		return "", err
-	}
+func generateBlockHeaderHash(data []byte, prefix []byte) string {
+	// We can ignore the error return here because our fixed size/key arguments will
+	// never trigger an error
+	tmpHash, _ := blake2b.New256(nil)
 	if prefix != nil {
 		tmpHash.Write(prefix)
 	}
 	tmpHash.Write(data)
-	return hex.EncodeToString(tmpHash.Sum(nil)), nil
-}
-
-func extractHeaderFromBlockCbor(data []byte) ([]byte, error) {
-	// Parse outer list to get at header CBOR
-	var rawBlock []cbor.RawMessage
-	if _, err := cbor.Decode(data, &rawBlock); err != nil {
-		return nil, err
-	}
-	return []byte(rawBlock[0]), nil
+	return hex.EncodeToString(tmpHash.Sum(nil))
 }

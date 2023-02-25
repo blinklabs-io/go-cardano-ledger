@@ -3,9 +3,10 @@ package cbor_test
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/cloudstruct/go-cardano-ledger/cbor"
 	"reflect"
 	"testing"
+
+	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
 type decodeTestDefinition struct {

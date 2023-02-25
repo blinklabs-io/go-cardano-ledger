@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"fmt"
+
 	"github.com/cloudstruct/go-cardano-ledger/cbor"
 )
 
@@ -17,10 +18,15 @@ const (
 
 type AllegraBlock struct {
 	cbor.StructAsArray
+	cbor.DecodeStoreCbor
 	Header                 *AllegraBlockHeader
 	TransactionBodies      []AllegraTransactionBody
 	TransactionWitnessSets []ShelleyTransactionWitnessSet
 	TransactionMetadataSet map[uint]cbor.Value
+}
+
+func (b *AllegraBlock) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 func (b *AllegraBlock) Hash() string {
@@ -69,12 +75,7 @@ func NewAllegraBlockFromCbor(data []byte) (*AllegraBlock, error) {
 	if _, err := cbor.Decode(data, &allegraBlock); err != nil {
 		return nil, fmt.Errorf("decode error: %s", err)
 	}
-	rawBlockHeader, err := extractHeaderFromBlockCbor(data)
-	if err != nil {
-		return nil, err
-	}
-	allegraBlock.Header.id, err = generateBlockHeaderHash(rawBlockHeader, nil)
-	return &allegraBlock, err
+	return &allegraBlock, nil
 }
 
 func NewAllegraTransactionBodyFromCbor(data []byte) (*AllegraTransactionBody, error) {
