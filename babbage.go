@@ -46,9 +46,12 @@ func (b *BabbageBlock) Era() Era {
 	return eras[ERA_ID_BABBAGE]
 }
 
-func (b *BabbageBlock) Transactions() []Transaction {
-	// TODO
-	return nil
+func (b *BabbageBlock) Transactions() []TransactionBody {
+	ret := []TransactionBody{}
+	for _, v := range b.TransactionBodies {
+		ret = append(ret, &v)
+	}
+	return ret
 }
 
 type BabbageBlockHeader struct {
@@ -109,6 +112,10 @@ type BabbageTransactionBody struct {
 	CollateralReturn ShelleyTransactionOutput  `cbor:"16,keyasint,omitempty"`
 	TotalCollateral  uint64                    `cbor:"17,keyasint,omitempty"`
 	ReferenceInputs  []ShelleyTransactionInput `cbor:"18,keyasint,omitempty"`
+}
+
+func (b *BabbageTransactionBody) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 type BabbageTransaction struct {

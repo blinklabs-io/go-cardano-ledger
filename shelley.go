@@ -45,9 +45,12 @@ func (b *ShelleyBlock) Era() Era {
 	return eras[ERA_ID_SHELLEY]
 }
 
-func (b *ShelleyBlock) Transactions() []Transaction {
-	// TODO
-	return nil
+func (b *ShelleyBlock) Transactions() []TransactionBody {
+	ret := []TransactionBody{}
+	for _, v := range b.TransactionBodies {
+		ret = append(ret, &v)
+	}
+	return ret
 }
 
 type ShelleyBlockHeader struct {
@@ -100,6 +103,7 @@ func (h *ShelleyBlockHeader) Era() Era {
 
 type ShelleyTransactionBody struct {
 	cbor.DecodeStoreCbor
+	hash    string
 	Inputs  []ShelleyTransactionInput  `cbor:"0,keyasint,omitempty"`
 	Outputs []ShelleyTransactionOutput `cbor:"1,keyasint,omitempty"`
 	Fee     uint64                     `cbor:"2,keyasint,omitempty"`
@@ -120,6 +124,13 @@ type ShelleyTransactionBody struct {
 
 func (b *ShelleyTransactionBody) UnmarshalCBOR(cborData []byte) error {
 	return b.UnmarshalCborGeneric(cborData, b)
+}
+
+func (b *ShelleyTransactionBody) Hash() string {
+	if b.hash == "" {
+		b.hash = generateTransactionHash(b.Cbor(), nil)
+	}
+	return b.hash
 }
 
 type ShelleyTransactionInput struct {

@@ -172,7 +172,7 @@ func (b *ByronMainBlock) Era() Era {
 	return b.Header.Era()
 }
 
-func (b *ByronMainBlock) Transactions() []Transaction {
+func (b *ByronMainBlock) Transactions() []TransactionBody {
 	// TODO
 	return nil
 }
@@ -205,7 +205,7 @@ func (b *ByronEpochBoundaryBlock) Era() Era {
 	return b.Header.Era()
 }
 
-func (b *ByronEpochBoundaryBlock) Transactions() []Transaction {
+func (b *ByronEpochBoundaryBlock) Transactions() []TransactionBody {
 	// Boundary blocks don't have transactions
 	return nil
 }

@@ -1,11 +1,15 @@
 package ledger
 
 import (
+	"encoding/hex"
 	"fmt"
+
+	"golang.org/x/crypto/blake2b"
 )
 
-type Transaction interface {
-	// TODO: add methods for hash, inputs, outputs, etc.
+type TransactionBody interface {
+	Hash() string
+	// TODO: add additional functions for things like inputs, outputs, etc.
 }
 
 func NewTransactionFromCbor(txType uint, data []byte) (interface{}, error) {
@@ -42,4 +46,15 @@ func NewTransactionBodyFromCbor(txType uint, data []byte) (interface{}, error) {
 		return NewBabbageTransactionBodyFromCbor(data)
 	}
 	return nil, fmt.Errorf("unknown transaction type: %d", txType)
+}
+
+func generateTransactionHash(data []byte, prefix []byte) string {
+	// We can ignore the error return here because our fixed size/key arguments will
+	// never trigger an error
+	tmpHash, _ := blake2b.New256(nil)
+	if prefix != nil {
+		tmpHash.Write(prefix)
+	}
+	tmpHash.Write(data)
+	return hex.EncodeToString(tmpHash.Sum(nil))
 }

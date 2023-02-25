@@ -30,6 +30,10 @@ type StructAsArray struct {
 	_ struct{} `cbor:",toarray"`
 }
 
+type DecodeStoreCborInterface interface {
+	Cbor() []byte
+}
+
 type DecodeStoreCbor struct {
 	cborData []byte
 }
@@ -41,10 +45,7 @@ func (d *DecodeStoreCbor) Cbor() []byte {
 
 // UnmarshalCborGeneric decodes the specified CBOR into the destination object without using the
 // destination object's UnmarshalCBOR() function
-func (d *DecodeStoreCbor) UnmarshalCborGeneric(cborData []byte, dest interface{}) error {
-	// Store a copy of the original CBOR data
-	d.cborData = make([]byte, len(cborData))
-	copy(d.cborData, cborData)
+func (d *DecodeStoreCbor) UnmarshalCborGeneric(cborData []byte, dest DecodeStoreCborInterface) error {
 	// Create a duplicate(-ish) struct from the destination
 	// We do this so that we can bypass any custom UnmarshalCBOR() function on the
 	// destination object
@@ -70,5 +71,10 @@ func (d *DecodeStoreCbor) UnmarshalCborGeneric(cborData []byte, dest interface{}
 	if err := copier.Copy(dest, tmpDest.Interface()); err != nil {
 		return err
 	}
+	// Store a copy of the original CBOR data
+	// This must be done after we copy from the temp object above, or it gets wiped out
+	// when using struct embedding and the DecodeStoreCbor struct is embedded at a deeper level
+	d.cborData = make([]byte, len(cborData))
+	copy(d.cborData, cborData)
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 
 type Block interface {
 	BlockHeader
-	Transactions() []Transaction
+	Transactions() []TransactionBody
 }
 
 type BlockHeader interface {
