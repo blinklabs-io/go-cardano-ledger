@@ -45,9 +45,12 @@ func (b *AllegraBlock) Era() Era {
 	return eras[ERA_ID_ALLEGRA]
 }
 
-func (b *AllegraBlock) Transactions() []Transaction {
-	// TODO
-	return nil
+func (b *AllegraBlock) Transactions() []TransactionBody {
+	ret := []TransactionBody{}
+	for _, v := range b.TransactionBodies {
+		ret = append(ret, &v)
+	}
+	return ret
 }
 
 type AllegraBlockHeader struct {
@@ -61,6 +64,10 @@ func (h *AllegraBlockHeader) Era() Era {
 type AllegraTransactionBody struct {
 	ShelleyTransactionBody
 	ValidityIntervalStart uint64 `cbor:"8,keyasint,omitempty"`
+}
+
+func (b *AllegraTransactionBody) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 type AllegraTransaction struct {

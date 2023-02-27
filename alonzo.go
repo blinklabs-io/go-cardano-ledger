@@ -46,9 +46,12 @@ func (b *AlonzoBlock) Era() Era {
 	return eras[ERA_ID_ALONZO]
 }
 
-func (b *AlonzoBlock) Transactions() []Transaction {
-	// TODO
-	return nil
+func (b *AlonzoBlock) Transactions() []TransactionBody {
+	ret := []TransactionBody{}
+	for _, v := range b.TransactionBodies {
+		ret = append(ret, &v)
+	}
+	return ret
 }
 
 type AlonzoBlockHeader struct {
@@ -65,6 +68,10 @@ type AlonzoTransactionBody struct {
 	Collateral      []ShelleyTransactionInput `cbor:"13,keyasint,omitempty"`
 	RequiredSigners []Blake2b224              `cbor:"14,keyasint,omitempty"`
 	NetworkId       uint8                     `cbor:"15,keyasint,omitempty"`
+}
+
+func (b *AlonzoTransactionBody) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 type AlonzoTransactionWitnessSet struct {

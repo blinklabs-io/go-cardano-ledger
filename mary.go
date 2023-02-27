@@ -45,9 +45,12 @@ func (b *MaryBlock) Era() Era {
 	return eras[ERA_ID_MARY]
 }
 
-func (b *MaryBlock) Transactions() []Transaction {
-	// TODO
-	return nil
+func (b *MaryBlock) Transactions() []TransactionBody {
+	ret := []TransactionBody{}
+	for _, v := range b.TransactionBodies {
+		ret = append(ret, &v)
+	}
+	return ret
 }
 
 type MaryBlockHeader struct {
@@ -64,6 +67,10 @@ type MaryTransactionBody struct {
 	Outputs []cbor.Value `cbor:"1,keyasint,omitempty"`
 	// TODO: further parsing of this field
 	Mint cbor.Value `cbor:"9,keyasint,omitempty"`
+}
+
+func (b *MaryTransactionBody) UnmarshalCBOR(cborData []byte) error {
+	return b.UnmarshalCborGeneric(cborData, b)
 }
 
 type MaryTransaction struct {
