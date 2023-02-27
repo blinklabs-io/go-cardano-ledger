@@ -9,6 +9,7 @@ import (
 
 type TransactionBody interface {
 	Hash() string
+	Cbor() []byte
 	// TODO: add additional functions for things like inputs, outputs, etc.
 }
 
